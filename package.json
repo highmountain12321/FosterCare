@@ -1,0 +1,28 @@
+{
+  "name": "fostercare",
+  "version": "1.0.0",
+  "description": "orpans/foster care management system",
+  "main": "app.js",
+  "author": "Sajid Ansari",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index-compiled.js",
+    "dev": "nodemon --exec babel-node app",
+    "build": "babel app.js --out-file index-compiled.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.0.0",
+    "colors": "^1.4.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.11.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.12.8",
+    "@babel/core": "^7.12.9",
+    "@babel/node": "^7.12.6",
+    "@babel/preset-env": "^7.12.7"
+  }
+ 
+}
