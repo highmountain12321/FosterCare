@@ -31,5 +31,8 @@
   "bugs": {
     "url": "https://github.com/SajidAnTechie/FosterCare/issues"
   },
-  "homepage": "https://github.com/SajidAnTechie/FosterCare#readme"
+  "homepage": "https://github.com/SajidAnTechie/FosterCare#readme",
+  "engines": {
+    "node": "10.x"
+  }
 }
