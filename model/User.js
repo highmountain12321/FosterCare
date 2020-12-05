@@ -3,51 +3,78 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 
-const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Please add a name"],
-    trim: true,
+const UserSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: [true, "Please add a firstName"],
+      trim: true,
+    },
+    middleName: {
+      type: String,
+      default: "no-middleName",
+    },
+    lastName: {
+      type: String,
+      required: [true, "Please add a lastName"],
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: [true, "Please add a email"],
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        "Please add a valid email",
+      ],
+      unique: true,
+    },
+    gender: {
+      type: String,
+      required: [true, "Please add a gender"],
+    },
+    address: {
+      type: String,
+      required: [true, "Please add an address"],
+    },
+    photo: {
+      type: String,
+      default: "no-photo.jpeg",
+    },
+    phoneNumber: {
+      type: String,
+      required: [true, "Please add a phone number"],
+      match: [
+        /^([0|\+[0-9]{1,5})?([7-9][0-9]{9})$/,
+        "Please add a valid phone number",
+      ],
+      maxlength: [10, "Phone number cannot be longer than 10 character"],
+    },
+    password: {
+      type: String,
+      required: [true, "Please add a password"],
+      minlength: [8, "Password should be 8 character long"],
+      match: [
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
+        "Password sholud be at lest one digit, one lower and upper case ,one spcial charcter like @%!&^*",
+      ],
+      select: false,
+    },
+    role: {
+      type: String,
+      enum: ["staff", "admin", "superadmin"],
+      default: "staff",
+    },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  email: {
-    type: String,
-    required: [true, "Please add a email"],
-    match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      "Please add a valid email",
-    ],
-    unique: true,
-  },
-  address: {
-    type: String,
-    required: [true, "Please add an address"],
-  },
-  photo: {
-    type: String,
-    default: "no-photo.jpeg",
-  },
-  password: {
-    type: String,
-    minlength: [8, "Password should be 8 character long"],
-    required: [true, "Please add a password"],
-    match: [
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
-      "Password sholud be at lest one digit, one lower and upper case ,one spcial charcter like @%!&^*",
-    ],
-    select: false,
-  },
-  role: {
-    type: String,
-    enum: ["staff", "admin", "superadmin"],
-    default: "staff",
-  },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    toJSON: { virtuals: true },
+  }
+);
 
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
@@ -87,5 +114,12 @@ UserSchema.methods.getResetPasswordToken = function () {
 
   return resetToken;
 };
+
+UserSchema.virtual("Fosters", {
+  ref: "Foster",
+  localField: "_id",
+  foreignField: "caretakerId",
+  justOne: false,
+});
 
 export default mongoose.model("User", UserSchema);
