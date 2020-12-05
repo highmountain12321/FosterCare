@@ -1,6 +1,7 @@
 import express from "express";
 import colors from "colors";
 import dotenv from "dotenv";
+import cors from "cors";
 import { errorHandler, unknownEndpoints } from "./middleware/error";
 import connectDb from "./config/db";
 
@@ -11,6 +12,7 @@ dotenv.config({ path: "./config/.env" });
 connectDb();
 
 app.use(express.json());
+app.use(cors());
 
 app.use(unknownEndpoints);
 app.use(errorHandler);
