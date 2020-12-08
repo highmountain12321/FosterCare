@@ -11,6 +11,7 @@
     "build": "babel app.js --out-file index-compiled.js"
   },
   "dependencies": {
+    "@sendgrid/mail": "^7.4.0",
     "bcrypt": "^5.0.0",
     "cloudinary": "^1.23.0",
     "colors": "^1.4.0",

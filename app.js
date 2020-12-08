@@ -11,8 +11,13 @@ dotenv.config({ path: "./config/.env" });
 
 connectDb();
 
+//routes
+import authRouter from "./routes/auth";
+
 app.use(express.json());
 app.use(cors());
+
+app.use("/api/v1/auth", authRouter);
 
 app.use(unknownEndpoints);
 app.use(errorHandler);

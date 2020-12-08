@@ -12,7 +12,6 @@ const UserSchema = new mongoose.Schema(
     },
     middleName: {
       type: String,
-      default: "no-middleName",
     },
     lastName: {
       type: String,
@@ -38,10 +37,11 @@ const UserSchema = new mongoose.Schema(
     },
     photo: {
       type: String,
-      default: "no-photo.jpeg",
+      default:
+        "https://res.cloudinary.com/shoppoint/image/upload/v1607415518/userProfile/index_euin9u.png",
     },
     phoneNumber: {
-      type: String,
+      type: Number,
       required: [true, "Please add a phone number"],
       match: [
         /^([0|\+[0-9]{1,5})?([7-9][0-9]{9})$/,
@@ -61,7 +61,7 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["staff", "admin", "superadmin"],
+      enum: ["staff", "admin"],
       default: "staff",
     },
     resetPasswordToken: String,
