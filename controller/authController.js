@@ -3,7 +3,9 @@ import createError from "../utils/createError";
 import resetPasswordEmail from "../utils/resetPasswordEmail";
 import UploadImage from "../utils/upload";
 import asyncHandler from "../middleware/asyncHandler";
+import jwt_decode from "jwt-decode";
 import User from "../models/User";
+import Token from "../models/Token";
 import cloudinary from "cloudinary";
 
 cloudinary.config({
@@ -29,6 +31,12 @@ const login = asyncHandler(async (req, res, next) => {
   if (!isPassword) throw createError(401, `Password doesn't match`);
 
   sendTokenResponse(user, 200, res);
+});
+
+const getAuthDetails = asyncHandler(async (req, res, next) => {
+  const findUser = await User.findById(req.user._id);
+
+  res.status(200).send({ status: "success", payload: findUser });
 });
 
 //Update user details
@@ -132,7 +140,7 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
 
     res.status(200).send({
       status: "success",
-      message: "ResetPassword token is sent to your emails",
+      message: "ResetPassword token is sent to your email",
     });
   } catch (error) {
     user.resetPasswordToken = undefined;
@@ -172,17 +180,74 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     .send({ status: "success", message: "Your Password has beed changed" });
 });
 
-const sendTokenResponse = (user, statusCode, res) => {
+const sendTokenResponse = async (user, statusCode, res) => {
   const token = user.genAuthToken();
+  const refreshToken = user.genRefreshToken();
 
-  res.status(statusCode).send({ status: "Success", token });
+  await Token.create({
+    refreshToken: refreshToken,
+  });
+
+  res.status(statusCode).send({ status: "Success", token, refreshToken });
 };
+
+const sendRefreshToken = asyncHandler(async (req, res, next) => {
+  if (!req.body.token) throw createError(404, "Token not found");
+
+  const decodeToken = jwt_decode(req.body.token);
+
+  if (new Date(decodeToken.exp * 1000) >= new Date())
+    throw createError(400, "Token is not expired yet");
+
+  const isRefreshTokenExit = await Token.findOne({
+    refreshToken: req.body.refreshToken,
+  });
+
+  if (!isRefreshTokenExit) throw createError(404, "Invalid refreshToken");
+
+  const user = await User.findById(decodeToken._id);
+
+  if (!user) throw createError(404, `User not found`);
+
+  const newAccessToken = user.genAuthToken();
+  const newRefreshToken = user.genRefreshToken();
+
+  await Token.findByIdAndUpdate(isRefreshTokenExit._id, {
+    refreshToken: newRefreshToken,
+  });
+
+  res.status(200).send({
+    status: "Success",
+    token: newAccessToken,
+    refreshToken: newRefreshToken,
+    decodeToken,
+  });
+});
+
+const logout = asyncHandler(async (req, res, next) => {
+  const isRefreshTokenExit = await Token.findOne({
+    refreshToken: req.body.refreshToken,
+  });
+
+  if (!isRefreshTokenExit) throw createError(404, "Invalid refreshToken");
+
+  await Token.findByIdAndDelete(isRefreshTokenExit._id);
+
+  res.status(200).send({
+    status: "Success",
+    message: "Logout Success",
+  });
+});
+
 export {
   RegisterUser,
   login,
+  getAuthDetails,
   updateDetails,
   updatePassword,
   forgotPassword,
   resetPassword,
   updateProfilePhoto,
+  sendRefreshToken,
+  logout,
 };

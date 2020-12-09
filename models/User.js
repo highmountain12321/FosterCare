@@ -89,13 +89,22 @@ UserSchema.pre("save", async function (next) {
 
 UserSchema.methods.genAuthToken = function () {
   return jwt.sign(
-    { _id: this._id, name: this.name, email: this.email, role: this.role },
+    {
+      _id: this._id,
+      email: this.email,
+      role: this.role,
+    },
     process.env.JWT_SECRET,
     {
       expiresIn: process.env.JWT_EXPIREIN,
     }
   );
 };
+
+UserSchema.methods.genRefreshToken = function () {
+  return crypto.randomBytes(20).toString("hex");
+};
+
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
