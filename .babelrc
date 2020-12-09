@@ -8,5 +8,10 @@
           }
         }
       ]
-    ]
+    ],
+    
+    "plugins": [["inline-dotenv",{
+      "path": "./config/.env" // See motdotla/dotenv for more options
+    }]]
+    
   }

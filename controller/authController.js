@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import createError from "../utils/createError";
 import resetPasswordEmail from "../utils/resetPasswordEmail";
-import upload from "../utils/upload";
+import UploadImage from "../utils/upload";
 import asyncHandler from "../middleware/asyncHandler";
 import User from "../models/User";
 import cloudinary from "cloudinary";
@@ -75,25 +75,31 @@ const updatePassword = asyncHandler(async (req, res, next) => {
 });
 
 const updateProfilePhoto = asyncHandler(async (req, res, next) => {
-  upload(req, res, async (err) => {
-    if (err) {
-      res.status(400).send(err);
-    } else {
-      cloudinary.v2.uploader.upload(
-        req.file.path,
-        { use_filename: true, folder: "userProfile" },
-        async function (error, result) {
-          if (error) throw createError(409, `failed to create product`);
-          await User.findByIdAndUpdate(req.user._id, {
-            photo: result.url,
-          });
+  UploadImage(req, res, async (err) => {
+    if (err) return res.status(400).send(err);
 
-          res
-            .status(200)
-            .send({ status: "Success", message: "Profile photo updated" });
-        }
-      );
-    }
+    cloudinary.v2.uploader.upload(
+      req.file.path,
+      { folder: "avatar" },
+      async function (error, result) {
+        if (error) throw createError(409, `failed to update profile image`);
+
+        await User.findByIdAndUpdate(
+          req.user._id,
+          {
+            photo: result.url,
+          },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+
+        res
+          .status(200)
+          .send({ status: "Success", message: "Profile photo updated" });
+      }
+    );
   });
 });
 
